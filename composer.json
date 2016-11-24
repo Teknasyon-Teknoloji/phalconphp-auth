@@ -1,0 +1,14 @@
+{
+  "name": "teknasyon/phalconphp-auth",
+  "require": {
+    "php": ">=7.0.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Teknasyon\\Phalcon\\": "src"
+    }
+  },
+  "require-dev": {
+    "phalcon/devtools": "~3.0.0"
+  }
+}
