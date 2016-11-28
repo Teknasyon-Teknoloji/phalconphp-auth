@@ -1,6 +1,7 @@
 {
   "name": "teknasyon/phalconphp-auth",
   "type": "library",
+  "license": "MIT",
   "authors": [
     {
       "name": "Ilyas Serter",
