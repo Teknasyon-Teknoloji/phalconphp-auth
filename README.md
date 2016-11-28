@@ -1,3 +1,23 @@
+# Installation
+
+Add repository to composer
+```
+"repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "teknasyon/phalconphp-auth",
+        "version": "master",
+        "source": {
+          "url": "git@github.com:Teknasyon-Teknoloji/phalconphp-auth.git",
+          "type": "git",
+          "reference": "master"
+        }
+      }
+    }
+  ]
+```
+
 # Service Registration
 
 ```
@@ -6,7 +26,7 @@ $config = [
         'drivers' => [
          'session' => [
              'provider' => [
-                'type' => 'phalconModel',
+                'type' => 'phalcon.model',
                 'model => '\App\Models\Users'
              ]
          ]

@@ -1,5 +1,17 @@
 {
   "name": "teknasyon/phalconphp-auth",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Ilyas Serter",
+      "email": "ilyasserter@teknasyon.com",
+      "role": "Developer"
+    }
+  ],
+  "keywords": [
+    "phalconphp",
+    "auth"
+  ],
   "require": {
     "php": ">=7.0.1"
   },
