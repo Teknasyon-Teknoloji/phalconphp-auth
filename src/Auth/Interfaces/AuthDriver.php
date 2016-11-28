@@ -12,7 +12,7 @@ use Phalcon\DiInterface;
 
 /**
  * Interface AuthDriver
- * @package Teknasyon\Interfaces\Auth
+ * @package Teknasyon\Phalcon\Auth\Interfaces
  */
 interface AuthDriver {
 

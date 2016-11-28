@@ -10,7 +10,7 @@ namespace Teknasyon\Phalcon\Auth\Interfaces;
 
 /**
  * Interface UserProvider
- * @package Teknasyon\Interfaces\Auth
+ * @package Teknasyon\Phalcon\Auth\Interfaces
  */
 interface UserProvider {
 

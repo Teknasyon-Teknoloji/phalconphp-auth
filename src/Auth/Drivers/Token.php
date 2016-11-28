@@ -10,9 +10,9 @@ namespace Teknasyon\Phalcon\Auth\Drivers;
 
 
 use Phalcon\DiInterface;
-use Teknasyon\Interfaces\Auth\AuthDriver;
-use Teknasyon\Interfaces\Auth\User;
-use Teknasyon\Interfaces\Auth\UserProvider;
+use Teknasyon\Phalcon\Auth\Interfaces\AuthDriver;
+use Teknasyon\Phalcon\Auth\Interfaces\User;
+use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
 
 
 class Token implements AuthDriver
