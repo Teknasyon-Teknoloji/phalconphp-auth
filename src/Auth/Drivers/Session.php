@@ -3,6 +3,7 @@
 namespace Teknasyon\Phalcon\Auth\Drivers;
 
 use Phalcon\DiInterface;
+use Phalcon\Session\AdapterInterface as SessionInterface;
 use Teknasyon\Phalcon\Auth\Interfaces\AuthDriver;
 use Teknasyon\Phalcon\Auth\Interfaces\User;
 use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
@@ -29,13 +30,30 @@ class Session implements AuthDriver
      * @param array $config
      * @param UserProvider $userProvider
      * @param DiInterface $di
+     * @throws \Exception
      */
     public function __construct(array $config, UserProvider $userProvider, DiInterface $di)
     {
         $this->config = $config;
         $this->userProvider = $userProvider;
+
+        // get session handler
         $this->sessionHandler = $di->get($config['sessionServiceName'] ?? 'session');
+        // validate session handler
+        if( ! $this->sessionHandler instanceof SessionInterface) {
+            throw new \Exception('Session service cannot be resolved from the DI container.');
+        }
+
+        // get hashing service
         $this->hashingService = $di->get($config['hashingServiceName'] ?? 'security');
+
+        // validate hashing service
+        if( !is_object($this->hashingService)
+            || !method_exists($this->hashingService,'hash')
+            || !method_exists($this->hashingService,'checkHash')
+        ) {
+            throw new \Exception('Hashing (security) service cannot be resolved from the DI container.');
+        }
     }
 
 
