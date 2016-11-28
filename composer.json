@@ -14,7 +14,8 @@
     "auth"
   ],
   "require": {
-    "php": ">=7.0.1"
+    "php": ">=7.0.1",
+    "ext-phalcon": ">=2.0.1"
   },
   "autoload": {
     "psr-4": {
