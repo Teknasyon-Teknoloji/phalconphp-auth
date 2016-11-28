@@ -17,7 +17,7 @@ $config = [
              ]
          ]
         ]
- ];
+];
  
 $di->setShared('auth', new Teknasyon\Phalcon\Auth\AuthService($config) );
 
