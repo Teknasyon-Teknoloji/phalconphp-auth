@@ -1,21 +1,7 @@
 # Installation
 
-Add repository to composer
 ```
-"repositories": [
-    {
-      "type": "package",
-      "package": {
-        "name": "teknasyon/phalconphp-auth",
-        "version": "master",
-        "source": {
-          "url": "git@github.com:Teknasyon-Teknoloji/phalconphp-auth.git",
-          "type": "git",
-          "reference": "master"
-        }
-      }
-    }
-  ]
+composer require teknasyon/phalconphp-auth
 ```
 
 # Service Registration
@@ -25,7 +11,7 @@ $config = [
         'driver' => 'session', 
         'drivers' => [
          'session' => [
-             'provider' => [
+             'userProvider' => [
                 'type' => 'phalcon.model',
                 'model => '\App\Models\Users'
              ]
@@ -42,7 +28,7 @@ $di->setShared('auth', new Teknasyon\Phalcon\Auth\AuthService($config) );
 ### Login with credentials.
 ```
 $credentials = ['username' => 'ilyas', 'password' => '12345'];
-$result = $dependencyInjector->auth->attempt($credentials);
+$result = $di->auth->attempt($credentials);  // returns true on success, false on failure. 
 
 ```
 
@@ -56,8 +42,10 @@ var_dump($di->auth->check()) // dumps true if a user is logged in. False otherwi
 $di->auth->logout();
 ```
 
-### Login via user object.
-/!\ User object must implement `\Teknasyon\Interfaces\Auth\User`. 
+### Login via user model.
+
+/!\ Users model must implement `\Teknasyon\Phalcon\Auth\Interfaces\User`. 
+
 ```
 $user = Users::findFirstById(1);
 
@@ -72,7 +60,7 @@ var_dump($di->auth->user()) // dumps the logged in user.
 
 
 ## TODO 
-
+- add LICENSE file.
 - Remember me feature
 - Token driver (create a separate table?)
 - Session expiry time? 
