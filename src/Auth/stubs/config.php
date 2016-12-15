@@ -14,7 +14,18 @@ return array(
     |--------------------------------------------------------------------------
     |
     */
-    'driver' => 'session',
+    'defaults' => [
+        'driver' => 'session',
+        'cookieServiceName' => 'cookies', // optional
+        'sessionServiceName' => 'session', // optional
+        'hashingServiceName' => 'security', // optional
+        'userManager' => [
+            'type' => 'phalcon.model',
+            'options' => [
+                'model' => '\App\Models\Users'
+            ]
+        ]
+    ],
 
 
     /*
@@ -36,7 +47,7 @@ return array(
 
             'hashingServiceName' => 'security',
 
-            'userProvider' => [
+            'userManager' => [
                 'type' => 'phalcon.model',
                 'options' => [
                     'model' => '\App\Models\Users'
@@ -56,12 +67,13 @@ return array(
 
             'hashingServiceName' => 'security',
 
-            'userProvider' => [
+            'userManager' => [
                 'type' => 'phalcon.pdo',
                 'options' => [
                     'table' => 'users',
                     'identifierColumn' => 'id',
-                    'passwordColumn' => 'password'
+                    'passwordColumn' => 'password',
+                    'tokenColumn' => 'auth_token'
                 ]
             ]
 

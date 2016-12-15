@@ -14,6 +14,7 @@ namespace Teknasyon\Phalcon\Auth\Interfaces;
  */
 interface User {
 
+
     /**
      * @return mixed
      */
@@ -23,6 +24,8 @@ interface User {
      * @return mixed
      */
     public function getPassword();
+
+    public function getAuthToken();
 
 
 }

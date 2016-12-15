@@ -6,24 +6,20 @@
  * Time: 13:35
  */
 
-namespace Teknasyon\Phalcon\Auth\Providers\Phalcon;
+namespace Teknasyon\Phalcon\Auth\UserManagers;
 
 
 use Phalcon\Db\Adapter\Pdo as DbAdapter;
-use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
+use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
 use Teknasyon\Phalcon\Auth\User;
 
 
 /**
- *
- * @TODO implement \ArrayAccess
- * @TODO implement \Traversable
- *
- * Class DbUserProvider
- * @package Teknasyon\Phalcon\Auth\Providers\Phalcon
+ * Class PhalconDb
+ * @package Teknasyon\Phalcon\Auth\UserManagers
  * @author Ilyas Serter <ilyasserter@teknasyon.com>
  */
-class DbUserProvider implements UserProvider {
+class PhalconDb implements UserManager  {
 
     /**
      * @var DbAdapter
@@ -80,6 +76,7 @@ class DbUserProvider implements UserProvider {
     public function findUserByCredentials(array $credentials)
     {
         $where = [];
+        $bindings = [];
         foreach ($credentials as $key => $val) {
             if($key != $this->options['passwordColumn']) {
                 $where[] = $this->db->escapeIdentifier($key) . ' = ?';
@@ -87,12 +84,17 @@ class DbUserProvider implements UserProvider {
             }
         }
 
-        $sql = 'SELECT * FROM ' . $this->options['table'] . ' WHERE ' . implode(' AND ',$where) . ' LIMIT 1';
+        $sql = 'SELECT * FROM ' . $this->db->escapeIdentifier($this->options['table']) . ' WHERE ' . implode(' AND ',$where) . ' LIMIT 1';
         $result = $this->db->query($sql,$bindings);
         $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
         $result = $result->fetch();
         if($result) {
             return new User($result,$this->options['identifierColumn'],$this->options['passwordColumn']);
         }
+    }
+
+    public function updateAuthToken(\Teknasyon\Phalcon\Auth\Interfaces\User $user, $token)
+    {
+        // TODO: Implement updateAuthToken() method.
     }
 }

@@ -11,7 +11,7 @@ $config = [
         'driver' => 'session', 
         'drivers' => [
          'session' => [
-             'userProvider' => [
+             'userManager' => [
                 'type' => 'phalcon.model',
                 'model => '\App\Models\Users'
              ]
@@ -60,7 +60,6 @@ var_dump($di->auth->user()) // dumps the logged in user.
 
 
 ## TODO 
-- add LICENSE file.
 - Remember me feature
 - Token driver (create a separate table?)
 - Session expiry time? 

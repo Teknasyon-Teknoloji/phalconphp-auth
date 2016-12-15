@@ -19,16 +19,17 @@ interface AuthDriver {
     /**
      * AuthDriver constructor.
      * @param array $config
-     * @param UserProvider $userProvider
+     * @param UserManager $userManager
      * @param DiInterface $di
      */
-    public function __construct(array $config, UserProvider $userProvider, DiInterface $di);
+    public function __construct(array $config, UserManager $userManager, DiInterface $di);
 
     /**
      * @param array $credentials
+     * @param bool $remember
      * @return bool
      */
-    public function attempt(array $credentials = []) : bool;
+    public function attempt(array $credentials = [],bool $remember = false) : bool;
 
     /**
      * @return bool
@@ -43,9 +44,10 @@ interface AuthDriver {
 
     /**
      * @param User $user
+     * @param bool $remember
      * @return mixed
      */
-    public function login(User $user);
+    public function login(User $user,bool $remember);
 
     /**
      * @return mixed

@@ -6,17 +6,18 @@
  * Time: 10:47
  */
 
-namespace Teknasyon\Phalcon\Auth\Providers\Phalcon;
+namespace Teknasyon\Phalcon\Auth\UserManagers;
 
 
-use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
+use Teknasyon\Phalcon\Auth\Interfaces\User;
+use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
 
 /**
- * Class ModelUserProvider
- * @package Teknasyon\Phalcon\Auth\Providers\Phalcon
+ * Class PhalconModel
+ * @package Teknasyon\Phalcon\Auth\UserManagers
  * @author Ilyas Serter <ilyasserter@teknasyon.com>
  */
-class ModelUserProvider implements UserProvider
+class PhalconModel implements UserManager
 {
 
     protected $model;
@@ -58,5 +59,10 @@ class ModelUserProvider implements UserProvider
         }
         $query->bind($bindings);
         return $query->limit(1)->execute()->getFirst();
+    }
+
+    public function updateAuthToken(User $user, $token)
+    {
+        // TODO: Implement updateAuthToken() method.
     }
 }

@@ -12,7 +12,7 @@ namespace Teknasyon\Phalcon\Auth\Drivers;
 use Phalcon\DiInterface;
 use Teknasyon\Phalcon\Auth\Interfaces\AuthDriver;
 use Teknasyon\Phalcon\Auth\Interfaces\User;
-use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
+use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
 
 
 class Token implements AuthDriver
@@ -24,35 +24,32 @@ class Token implements AuthDriver
      * @var array
      */
     private $config;
-    /**
-     * @var UserProvider
-     */
-    private $userProvider;
+    private $userManager;
     private $requestService;
     private $hashingService;
 
-    public function __construct(array $config, UserProvider $userProvider, DiInterface $di)
+    public function __construct(array $config, UserManager $userManager, DiInterface $di)
     {
 
         $this->config = $config;
-        $this->userProvider = $userProvider;
+        $this->userManager = $userManager;
         $this->requestService = $di->get($config['requestServiceName'] ?? 'request');
         $this->hashingService = $di->get($config['hashingServiceName'] ?? 'security');
     }
 
     /**
-     * @TODO remove this method from the interface??
      *
      * @param array $credentials
+     * @param bool $remember
      * @return bool
      */
-    public function attempt(array $credentials = []) : bool
+    public function attempt(array $credentials = [], bool $remember = false) : bool
     {
-        $user = $this->userProvider->findUserByCredentials($credentials);
+        $user = $this->userManager->findUserByCredentials($credentials);
         if(!$user) {
             return false;
         } else if($this->hashingService->checkHash($credentials['password'],$user->getPassword())) {
-            return $this->login($user);
+            return $this->login($user,$remember);
         }
 
         return false;
@@ -68,7 +65,7 @@ class Token implements AuthDriver
         // @TODO get auth user
     }
 
-    public function login(User $user)
+    public function login(User $user, bool $remember = false)
     {
         return !is_null($this->user());
     }

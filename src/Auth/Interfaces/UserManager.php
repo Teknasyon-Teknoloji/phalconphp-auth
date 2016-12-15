@@ -1,19 +1,17 @@
 <?php
+namespace Teknasyon\Phalcon\Auth\Interfaces;
+
+use Teknasyon\Phalcon\Auth\Interfaces\User;
+
 /**
  * Created by PhpStorm.
  * User: iserter
- * Date: 21/11/2016
- * Time: 09:58
+ * Date: 06/12/2016
+ * Time: 16:59
  */
 
-namespace Teknasyon\Phalcon\Auth\Interfaces;
-
-/**
- * Interface UserProvider
- * @package Teknasyon\Phalcon\Auth\Interfaces
- */
-interface UserProvider {
-
+interface UserManager {
+    
     /**
      * @param $id
      * @return User
@@ -26,4 +24,6 @@ interface UserProvider {
      */
     public function findUserByCredentials(array $credentials);
 
+
+    public function updateAuthToken(User $user,$token);
 }

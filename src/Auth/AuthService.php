@@ -9,6 +9,9 @@
 namespace Teknasyon\Phalcon\Auth;
 
 use Phalcon\Di\InjectionAwareInterface;
+use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
+use Teknasyon\Phalcon\Auth\UserManagers\PhalconDb;
+use Teknasyon\Phalcon\Auth\UserManagers\PhalconModel;
 use Teknasyon\Phalcon\InjectionAwareness;
 use Teknasyon\Phalcon\Auth\Drivers\Session as SessionDriver;
 use Teknasyon\Phalcon\Auth\Drivers\Token as TokenDriver;
@@ -57,19 +60,6 @@ class AuthService implements InjectionAwareInterface
     }
 
     /**
-     * @param $name
-     * @param \Closure $callback
-     * @return $this
-     */
-    public function addUserProvider($name, \Closure $callback)
-    {
-
-        $this->customUserProviders[$name] = $callback;
-
-        return $this;
-    }
-
-    /**
      * @param $method
      * @param $parameters
      * @return mixed
@@ -104,7 +94,7 @@ class AuthService implements InjectionAwareInterface
         if (isset($this->drivers[$driverName])) {
             return new $this->drivers[$driverName](
                 $config,
-                $this->resolveUserProvider($config['userProvider']['type'], $config['userProvider']['options']),
+                $this->resolveUserManager($config['userManager']['type'], $config['userManager']['options']),
                 $this->getDi()
             );
         }
@@ -115,23 +105,23 @@ class AuthService implements InjectionAwareInterface
     /**
      * @param $type
      * @param array $options
-     * @return DbUserProvider|ModelUserProvider
+     * @return mixed|PhalconDb|PhalconModel
      * @throws \Exception
      */
-    protected function resolveUserProvider($type, array $options = [])
+    protected function resolveUserManager($type, array $options = [])
     {
 
         switch ($type) {
             case 'phalcon.model':
-                return new ModelUserProvider($options);
+                return new PhalconModel($options);
                 break;
             case 'phalcon.pdo';
-                return new DbUserProvider($this->getDi()->get('db'), $options); // @TODO get pdo service name from config.
+                return new PhalconDb($this->getDi()->get('db'), $options); // @TODO get pdo service name from config.
                 break;
             default:
                 if (isset($this->customUserProviders[$type])) {
                     $userProvider = call_user_func($this->customUserProviders[$type], $options);
-                    if (!($userProvider instanceof UserProvider)) {
+                    if (!($userProvider instanceof UserManager)) {
                         throw new \Exception('Custom user provider must implement UserProvider interface. ');
                     }
                     return $userProvider;
