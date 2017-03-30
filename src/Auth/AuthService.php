@@ -36,7 +36,7 @@ class AuthService implements InjectionAwareInterface
         'session' => SessionDriver::class,
         'token' => TokenDriver::class
     ];
-    protected $customUserProviders = [];
+    protected $customUserManagers = [];
 
     /**
      * AuthService constructor.
@@ -89,12 +89,20 @@ class AuthService implements InjectionAwareInterface
     protected function resolveDriver($driverName)
     {
 
-        $config = $this->config['drivers'][$driverName] ?? [];
-
         if (isset($this->drivers[$driverName])) {
+            // prepare config
+            $driverConfig = $this->config['drivers'][$driverName] ?? [];
+            $defaultConfig = $this->config['defaults'] ?? [];
+            foreach ($defaultConfig as $configKey => $configVal) {
+                if(!isset($driverConfig[$configKey])) {
+                    $driverConfig[$configKey] = $configVal;
+                }
+            }
+
+            // resolve instance and return
             return new $this->drivers[$driverName](
-                $config,
-                $this->resolveUserManager($config['userManager']['type'], $config['userManager']['options']),
+                $driverConfig,
+                $this->resolveUserManager($driverConfig['userManager']['type'], $driverConfig['userManager']['options']),
                 $this->getDi()
             );
         }
@@ -119,12 +127,12 @@ class AuthService implements InjectionAwareInterface
                 return new PhalconDb($this->getDi()->get('db'), $options); // @TODO get pdo service name from config.
                 break;
             default:
-                if (isset($this->customUserProviders[$type])) {
-                    $userProvider = call_user_func($this->customUserProviders[$type], $options);
-                    if (!($userProvider instanceof UserManager)) {
-                        throw new \Exception('Custom user provider must implement UserProvider interface. ');
+                if (isset($this->customUserManagers[$type])) {
+                    $userManager = call_user_func($this->customUserManagers[$type], $options);
+                    if (!($userManager instanceof UserManager)) {
+                        throw new \Exception('Custom user manager must implement UserManager interface. ');
                     }
-                    return $userProvider;
+                    return $userManager;
                 }
                 throw new \InvalidArgumentException('Invalid user provider type given. ' . $this);
         }

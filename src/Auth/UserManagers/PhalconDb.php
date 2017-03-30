@@ -50,6 +50,10 @@ class PhalconDb implements UserManager  {
             throw new \Exception('DB User provider options require a password column name.');
         }
 
+        if(!isset($options['tokenColumn'])) {
+            $options['tokenColumn'] = 'auth_token';
+        }
+
         $this->db = $db;
         $this->options = $options;
     }

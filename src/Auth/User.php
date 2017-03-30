@@ -18,6 +18,7 @@ class User implements AuthUser
     protected $attributes;
     protected $identifierColumn = 'id';
     protected $passwordColumn = 'password';
+    protected $tokenColumn = 'auth_token';
 
 
     /**
@@ -25,12 +26,14 @@ class User implements AuthUser
      * @param array $attributes
      * @param $identifierColumn
      * @param $passwordColumn
+     * @param $tokenColumn
      */
-    public function __construct(array $attributes, $identifierColumn, $passwordColumn)
+    public function __construct(array $attributes, $identifierColumn, $passwordColumn,$tokenColumn)
     {
         $this->attributes = $attributes;
         $this->identifierColumn = $identifierColumn;
         $this->passwordColumn = $passwordColumn;
+        $this->tokenColumn = $tokenColumn;
     }
 
     /**
@@ -47,6 +50,11 @@ class User implements AuthUser
     public function getPassword()
     {
         return $this->attributes[$this->passwordColumn];
+    }
+
+    public function getAuthToken()
+    {
+        return $this->attributes[$this->tokenColumn];
     }
 
     public function toArray()
