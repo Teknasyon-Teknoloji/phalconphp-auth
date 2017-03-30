@@ -6,6 +6,7 @@
  * Time: 13:17
  */
 
+
 return array(
 
     /*
@@ -14,16 +15,14 @@ return array(
     |--------------------------------------------------------------------------
     |
     */
-    'defaults' => [
-        'driver' => 'session',
-        'cookieServiceName' => 'cookies', // optional
-        'sessionServiceName' => 'session', // optional
-        'hashingServiceName' => 'security', // optional
-        'userManager' => [
-            'type' => 'phalcon.model',
-            'options' => [
-                'model' => '\App\Models\Users'
-            ]
+    'driver' => 'session',
+    'cookieServiceName' => 'cookies', // optional
+    'sessionServiceName' => 'session', // optional
+    'hashingServiceName' => 'security', // optional
+    'userManager' => [
+        'type' => 'phalcon.model',
+        'options' => [
+            'model' => '\App\Models\Users'
         ]
     ],
 
@@ -32,7 +31,7 @@ return array(
     |--------------------------------------------------------------------------
     | Available drivers' config
     |--------------------------------------------------------------------------
-    | 
+    | Configurations can be set per driver.
     */
     'drivers' => [
 
@@ -43,7 +42,7 @@ return array(
         */
         'session' => [
 
-            'sessionServiceName' => 'session',
+            'sessionServiceName' => 'session', // overrides the default setting. can be removed.
 
             'hashingServiceName' => 'security',
 
@@ -60,6 +59,8 @@ return array(
         |--------------------------------------------------------------------------
         | Token driver settings
         |--------------------------------------------------------------------------
+        | /!\ WARNING : This driver is not ready to use.
+        |
         */
         'token' => [
 
@@ -73,7 +74,7 @@ return array(
                     'table' => 'users',
                     'identifierColumn' => 'id',
                     'passwordColumn' => 'password',
-                    'tokenColumn' => 'auth_token'
+                    'authTokenColumn' => 'auth_token'
                 ]
             ]
 

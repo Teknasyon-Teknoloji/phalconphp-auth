@@ -1,4 +1,10 @@
-# Installation
+# Introduction
+An authentication package for PhalconPHP. It provides session-based authentication with an easy-to-use API. 
+
+The architecture is designed to support multiple drivers, and implementing a token-based authentication driver is next on my list. 
+Grab a fork! ;) 
+
+# Installation via Composer
 
 ```
 composer require teknasyon/phalconphp-auth
@@ -6,24 +12,27 @@ composer require teknasyon/phalconphp-auth
 
 # Service Registration
 
+You may register the service with default settings
+``` 
+$di->setShared('auth', new Teknasyon\Phalcon\Auth\AuthService() );
+
 ```
+Or you may pass-in a configuration array like below. 
+
+``` 
 $config = [
-        'driver' => 'session', 
-        'drivers' => [
-         'session' => [
-             'userManager' => [
-                'type' => 'phalcon.model',
-                'model => '\App\Models\Users'
-             ]
-         ]
-        ]
-];
- 
-$di->setShared('auth', new Teknasyon\Phalcon\Auth\AuthService($config) );
+          'driver' => 'session', 
+          'userManager' => [
+              'type' => 'phalcon.model',
+              'model => '\App\Models\Users'
+           ]
+          ];
+$di->setShared('auth', new Teknasyon\Phalcon\Auth\AuthService() );
 
 ```
+This service is highly configurable. See stubs/config.php for more options. 
 
-#Usage 
+# Usage 
 
 ### Login with credentials.
 ```
@@ -60,7 +69,5 @@ var_dump($di->auth->user()) // dumps the logged in user.
 
 
 ## TODO 
-- Remember me feature
-- Token driver (create a separate table?)
-- Session expiry time? 
-- Make identifier column and password column names configurable. 
+- Develop feature to expire authentications after n seconds. Currently, it's dependent on the session expire time. 
+- Develop a token driver that utilizes JWT. 

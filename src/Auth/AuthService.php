@@ -16,9 +16,6 @@ use Teknasyon\Phalcon\InjectionAwareness;
 use Teknasyon\Phalcon\Auth\Drivers\Session as SessionDriver;
 use Teknasyon\Phalcon\Auth\Drivers\Token as TokenDriver;
 use Teknasyon\Phalcon\Auth\Interfaces\AuthDriver;
-use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
-use Teknasyon\Phalcon\Auth\Providers\Phalcon\DbUserProvider;
-use Teknasyon\Phalcon\Auth\Providers\Phalcon\ModelUserProvider;
 
 /**
  * Class AuthService
@@ -36,13 +33,13 @@ class AuthService implements InjectionAwareInterface
         'session' => SessionDriver::class,
         'token' => TokenDriver::class
     ];
-    protected $customUserProviders = [];
+    protected $customUserManagers = [];
 
     /**
      * AuthService constructor.
      * @param $config
      */
-    public function __construct($config)
+    public function __construct($config = [])
     {
         $this->config = $config;
     }
@@ -75,7 +72,9 @@ class AuthService implements InjectionAwareInterface
      */
     public function drive($driverName = null)
     {
-        $driverName = $driverName ?: $this->config['driver'];
+        if (!$driverName) {
+            $driverName = $this->config['driver'] ?? 'session';
+        }
 
         return isset($this->driverInstances[$driverName])
             ? $this->driverInstances[$driverName]
@@ -89,12 +88,13 @@ class AuthService implements InjectionAwareInterface
     protected function resolveDriver($driverName)
     {
 
-        $config = $this->config['drivers'][$driverName] ?? [];
-
         if (isset($this->drivers[$driverName])) {
+            $driverConfig = $this->getDriverConfig($driverName);
+
+            // resolve instance and return
             return new $this->drivers[$driverName](
-                $config,
-                $this->resolveUserManager($config['userManager']['type'], $config['userManager']['options']),
+                $driverConfig,
+                $this->resolveUserManager($driverConfig['userManager']['type'],$driverConfig['userManager']['options']),
                 $this->getDi()
             );
         }
@@ -119,14 +119,35 @@ class AuthService implements InjectionAwareInterface
                 return new PhalconDb($this->getDi()->get('db'), $options); // @TODO get pdo service name from config.
                 break;
             default:
-                if (isset($this->customUserProviders[$type])) {
-                    $userProvider = call_user_func($this->customUserProviders[$type], $options);
-                    if (!($userProvider instanceof UserManager)) {
-                        throw new \Exception('Custom user provider must implement UserProvider interface. ');
+                if (isset($this->customUserManagers[$type])) {
+                    $userManager = call_user_func($this->customUserManagers[$type], $options);
+                    if (!($userManager instanceof UserManager)) {
+                        throw new \Exception('Custom user manager must implement UserManager interface. ');
                     }
-                    return $userProvider;
+                    return $userManager;
                 }
                 throw new \InvalidArgumentException('Invalid user provider type given. ' . $this);
         }
+    }
+
+    /**
+     * @param $driverName
+     * @return array
+     */
+    protected function getDriverConfig($driverName):array
+    {
+        $driverConfig = $this->config['drivers'][$driverName] ?? [];
+        $defaultConfig = $this->config ?? [];
+        foreach ($defaultConfig as $configKey => $configVal) {
+            if ($configKey != 'drivers' && !isset($driverConfig[$configKey])) {
+                $driverConfig[$configKey] = $configVal;
+            }
+        }
+
+        if (!isset($driverConfig['userManager'])) {
+            $driverConfig['userManager'] = ['type' => 'phalcon.pdo', 'options' => []];
+        }
+
+        return $driverConfig;
     }
 }
