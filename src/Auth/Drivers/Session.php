@@ -22,10 +22,12 @@ class Session implements AuthDriver
     private $config;
     private $user;
 
+    protected $key;
     protected $userManager;
     protected $hashingService;
     protected $sessionHandler;
     protected $cookies;
+    protected $rememberCookieName;
 
     /**
      * Session constructor.
@@ -65,6 +67,20 @@ class Session implements AuthDriver
         if( ! $this->cookies instanceof CookieInterface) {
             throw new \Exception('Cookies service cannot be resolved from the DI container.');
         }
+
+        // set remember cookie name
+        if(isset($config['rememberCookieName'])) {
+            $this->rememberCookieName = $config['rememberCookieName'];
+        } else {
+            $this->rememberCookieName = 'remember_' . md5(static::class);
+        }
+
+        // set session key
+        if(isset($config['sessionKey'])) {
+            $this->key = $config['sessionKey'];
+        } else {
+            $this->key = 'auth_' . md5(static::class);
+        }
     }
 
     /**
@@ -89,7 +105,7 @@ class Session implements AuthDriver
      */
     public function check() : bool
     {
-        return $this->sessionHandler->has('teknasyon_login') && $this->user();
+        return ($this->sessionHandler->has($this->key) && $this->user()) || $this->remember();
     }
 
     /**
@@ -99,7 +115,7 @@ class Session implements AuthDriver
     public function user($fresh = false)
     {
         if($fresh || !$this->user) {
-            $this->user = $this->userManager->findUserById($this->sessionHandler->get('teknasyon_login'));
+            $this->user = $this->userManager->findUserById($this->sessionHandler->get($this->key));
         }
 
         return $this->user;
@@ -113,13 +129,30 @@ class Session implements AuthDriver
     public function login(User $user,bool $remember = false)
     {
         if($remember) {
-            $this->cookies->set('auth_token',md5(microtime(1)));
-            $this->userManager->updateAuthToken($user,$this->cookies->get('auth_token'));
+            $token = md5(microtime(1) . '_salt_' . $this->key);
+            $this->userManager->updateAuthToken($user,$token);
+            $this->cookies->set($this->rememberCookieName, $user->getId() . '|' . $token);
         }
 
-        $this->sessionHandler->set('teknasyon_login',$user->getId());
+        $this->sessionHandler->set($this->key,$user->getId());
 
         return !is_null($this->user());
+    }
+
+    public function remember()
+    {
+        $remember = $this->cookies->get($this->rememberCookieName);
+        if(!empty($remember) && is_string($remember) && strstr($remember,'|') !== false) {
+            $data = explode('|',$remember); // 0=>userId, 1=>authToken
+            $user = $this->userManager->findUserById((int) $data[0]);
+            if($user->getAuthToken() == $data[1]) {
+                $this->user = $user;
+                $this->sessionHandler->set($this->key,$user->getId());
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -128,7 +161,7 @@ class Session implements AuthDriver
     public function logout()
     {
         $this->user = null;
-        $this->sessionHandler->remove('teknasyon_login');
+        $this->sessionHandler->remove($this->key);
     }
 
 

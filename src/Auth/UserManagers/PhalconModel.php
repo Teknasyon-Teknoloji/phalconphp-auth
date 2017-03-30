@@ -9,6 +9,7 @@
 namespace Teknasyon\Phalcon\Auth\UserManagers;
 
 
+use Phalcon\Mvc\Model;
 use Teknasyon\Phalcon\Auth\Interfaces\User;
 use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
 
@@ -21,6 +22,7 @@ class PhalconModel implements UserManager
 {
 
     protected $model;
+    protected $authTokenColumn = 'auth_token';
 
     /**
      * ModelUserProvider constructor.
@@ -31,6 +33,11 @@ class PhalconModel implements UserManager
         if(!class_exists($options['model'])) {
             throw new \InvalidArgumentException('Model does not exist: ' . $options['model']);
         }
+
+        if(isset($options['authTokenColumn'])) {
+            $this->authTokenColumn = $options['authTokenColumn'];
+        }
+
         $this->model = $options['model'];
     }
 
@@ -63,6 +70,10 @@ class PhalconModel implements UserManager
 
     public function updateAuthToken(User $user, $token)
     {
-        // TODO: Implement updateAuthToken() method.
+        if($user instanceof Model) {
+            return $user->save([$this->authTokenColumn => $token]);
+        }
+
+        return false;
     }
 }

@@ -9,7 +9,9 @@
 namespace Teknasyon\Phalcon\Auth\UserManagers;
 
 
+use Phalcon\Db;
 use Phalcon\Db\Adapter\Pdo as DbAdapter;
+use Teknasyon\Phalcon\Auth\Interfaces\User as UserInterface;
 use Teknasyon\Phalcon\Auth\Interfaces\UserManager;
 use Teknasyon\Phalcon\Auth\User;
 
@@ -29,6 +31,10 @@ class PhalconDb implements UserManager  {
      * @var array
      */
     private $options;
+    private $table = 'users';
+    private $identifierColumn = 'id';
+    private $passwordColumn = 'password';
+    private $authTokenColumn = 'auth_token';
 
     /**
      * DbUserProvider constructor.
@@ -38,20 +44,20 @@ class PhalconDb implements UserManager  {
      */
     public function __construct(DbAdapter $db, array $options)
     {
-        if(!isset($options['table'])) {
-            throw new \Exception('DB User provider options require a target table.');
+        if(isset($options['table'])) {
+            $this->table = $options['table'];
         }
 
-        if(!isset($options['identifierColumn'])) {
-            throw new \Exception('DB User provider options require an identifier column name.');
+        if(isset($options['identifierColumn'])) {
+            $this->identifierColumn = $options['identifierColumn'];
         }
 
-        if(!isset($options['passwordColumn'])) {
-            throw new \Exception('DB User provider options require a password column name.');
+        if(isset($options['passwordColumn'])) {
+            $this->passwordColumn = $options['passwordColumn'];
         }
 
-        if(!isset($options['tokenColumn'])) {
-            $options['tokenColumn'] = 'auth_token';
+        if(isset($options['authTokenColumn'])) {
+            $this->authTokenColumn = $options['authTokenColumn'];
         }
 
         $this->db = $db;
@@ -64,12 +70,16 @@ class PhalconDb implements UserManager  {
      */
     public function findUserById($id)
     {
-        $sql = 'SELECT * FROM ' . $this->options['table'] . ' WHERE ' . $this->options['identifierColumn'] .  ' = ? LIMIT 1';
+        $sql = 'SELECT * FROM ' . $this->db->escapeIdentifier($this->table)
+                . ' WHERE ' . $this->db->escapeIdentifier($this->identifierColumn) .  ' = ? LIMIT 1';
         $result = $this->db->query($sql,[$id]);
-        $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
+        $result->setFetchMode(Db::FETCH_ASSOC);
         $result = $result->fetch();
         if($result) {
-            return new User($result,$this->options['identifierColumn'],$this->options['passwordColumn']);
+            return new User($result,
+                $this->identifierColumn,
+                $this->passwordColumn,
+                $this->authTokenColumn);
         }
     }
 
@@ -82,23 +92,31 @@ class PhalconDb implements UserManager  {
         $where = [];
         $bindings = [];
         foreach ($credentials as $key => $val) {
-            if($key != $this->options['passwordColumn']) {
+            if($key != $this->passwordColumn) {
                 $where[] = $this->db->escapeIdentifier($key) . ' = ?';
                 $bindings[] = $val;
             }
         }
 
-        $sql = 'SELECT * FROM ' . $this->db->escapeIdentifier($this->options['table']) . ' WHERE ' . implode(' AND ',$where) . ' LIMIT 1';
+        $sql = 'SELECT * FROM ' . $this->db->escapeIdentifier($this->table) . ' WHERE ' . implode(' AND ',$where) . ' LIMIT 1';
         $result = $this->db->query($sql,$bindings);
-        $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
+        $result->setFetchMode(Db::FETCH_ASSOC);
         $result = $result->fetch();
         if($result) {
-            return new User($result,$this->options['identifierColumn'],$this->options['passwordColumn']);
+            return new User($result,
+                $this->identifierColumn,
+                $this->passwordColumn,
+                $this->authTokenColumn
+            );
         }
     }
 
-    public function updateAuthToken(\Teknasyon\Phalcon\Auth\Interfaces\User $user, $token)
+    public function updateAuthToken(UserInterface $user, $token)
     {
-        // TODO: Implement updateAuthToken() method.
+        $sql = 'UPDATE ' . $this->db->escapeIdentifier($this->table) . ' SET '
+            . $this->db->escapeIdentifier($this->authTokenColumn).' = ? WHERE '
+            . $this->db->escapeIdentifier($this->identifierColumn) .  ' = ?';
+
+        return $this->db->execute($sql,[$token,$user->getId()]);
     }
 }

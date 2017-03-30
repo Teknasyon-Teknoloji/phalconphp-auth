@@ -16,9 +16,6 @@ use Teknasyon\Phalcon\InjectionAwareness;
 use Teknasyon\Phalcon\Auth\Drivers\Session as SessionDriver;
 use Teknasyon\Phalcon\Auth\Drivers\Token as TokenDriver;
 use Teknasyon\Phalcon\Auth\Interfaces\AuthDriver;
-use Teknasyon\Phalcon\Auth\Interfaces\UserProvider;
-use Teknasyon\Phalcon\Auth\Providers\Phalcon\DbUserProvider;
-use Teknasyon\Phalcon\Auth\Providers\Phalcon\ModelUserProvider;
 
 /**
  * Class AuthService
@@ -42,7 +39,7 @@ class AuthService implements InjectionAwareInterface
      * AuthService constructor.
      * @param $config
      */
-    public function __construct($config)
+    public function __construct($config = [])
     {
         $this->config = $config;
     }
@@ -75,7 +72,9 @@ class AuthService implements InjectionAwareInterface
      */
     public function drive($driverName = null)
     {
-        $driverName = $driverName ?: $this->config['driver'];
+        if (!$driverName) {
+            $driverName = $this->config['driver'] ?? 'session';
+        }
 
         return isset($this->driverInstances[$driverName])
             ? $this->driverInstances[$driverName]
@@ -90,19 +89,12 @@ class AuthService implements InjectionAwareInterface
     {
 
         if (isset($this->drivers[$driverName])) {
-            // prepare config
-            $driverConfig = $this->config['drivers'][$driverName] ?? [];
-            $defaultConfig = $this->config['defaults'] ?? [];
-            foreach ($defaultConfig as $configKey => $configVal) {
-                if(!isset($driverConfig[$configKey])) {
-                    $driverConfig[$configKey] = $configVal;
-                }
-            }
+            $driverConfig = $this->getDriverConfig($driverName);
 
             // resolve instance and return
             return new $this->drivers[$driverName](
                 $driverConfig,
-                $this->resolveUserManager($driverConfig['userManager']['type'], $driverConfig['userManager']['options']),
+                $this->resolveUserManager($driverConfig['userManager']['type'],$driverConfig['userManager']['options']),
                 $this->getDi()
             );
         }
@@ -136,5 +128,26 @@ class AuthService implements InjectionAwareInterface
                 }
                 throw new \InvalidArgumentException('Invalid user provider type given. ' . $this);
         }
+    }
+
+    /**
+     * @param $driverName
+     * @return array
+     */
+    protected function getDriverConfig($driverName):array
+    {
+        $driverConfig = $this->config['drivers'][$driverName] ?? [];
+        $defaultConfig = $this->config ?? [];
+        foreach ($defaultConfig as $configKey => $configVal) {
+            if ($configKey != 'drivers' && !isset($driverConfig[$configKey])) {
+                $driverConfig[$configKey] = $configVal;
+            }
+        }
+
+        if (!isset($driverConfig['userManager'])) {
+            $driverConfig['userManager'] = ['type' => 'phalcon.pdo', 'options' => []];
+        }
+
+        return $driverConfig;
     }
 }
